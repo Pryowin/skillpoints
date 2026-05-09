@@ -49,7 +49,7 @@ Data updates when you play on the **current** character (quests, achievements, s
 
 A separate window focused on **one dungeon at a time** across **all character slots** on the account:
 
-1. Choose either a **public dungeon** or a **group dungeon** from the two dropdowns (the lists match USPF’s internal data). Selecting one clears the other.
+1. Choose either a **public dungeon** or a **group dungeon** from the two dropdowns (the lists match USPF’s internal data). Public entries show **dungeon name (zone name)**. Use the sort button below the public list to order them **by dungeon name** or **by zone name** (saved account-wide). Selecting one dropdown clears the other.
 2. Click **List characters** (enabled only after a dungeon is selected).
 3. The list shows **every character** returned by the game’s character list (`GetNumCharacters` / `GetCharacterInfo`), in slot order.
 4. For each name, **Skill point** shows:

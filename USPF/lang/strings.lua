@@ -115,6 +115,9 @@ local strings = {
 	USPF_DUN_MISSING_SP		= "No",
 	USPF_DUN_UNKNOWN		= "Unknown",
 	USPF_DUN_NO_DATA		= "No saved data",
+
+	USPF_DUN_PD_SORT_DUNGEON = "Public dungeons: sort by dungeon name",
+	USPF_DUN_PD_SORT_ZONE = "Public dungeons: sort by zone name",
 }
 
 for stringId, stringValue in pairs(strings) do

@@ -59,6 +59,7 @@ USPF.defaults = {
 	charInfo = {},
 	settings = {},
 	ptsData = {},
+	dunPDSortBy = "dungeon",
 }
 
 
@@ -1303,7 +1304,54 @@ function USPF:ToggleWindow()
 	SCENE_MANAGER:ToggleTopLevel(USPF_GUI)
 end
 
-local function USPF_BuildDunCombos()
+local function USPF_GetPDDungeonDisplayName(d)
+	return zf("<<C:1>>", GZNBId(d.id))
+end
+
+local function USPF_GetPDZoneDisplayName(d)
+	return zf("<<C:1>>", GZNBId(USPF.data.ZId.ZN[d.zone]))
+end
+
+local function USPF_GetPDComboLabel(d)
+	return zf("<<C:1>> (<<C:2>>)", GZNBId(d.id), GZNBId(USPF.data.ZId.ZN[d.zone]))
+end
+
+local function USPF_GetGDComboLabel(d)
+	return zf("<<C:1>>", GZNBId(d.id))
+end
+
+local function USPF_BuildSortedPDList()
+	local pdList = {}
+	for _, d in ipairs(USPF.data.PD) do
+		table.insert(pdList, d)
+	end
+	local sortMode = USPF.sVar.dunPDSortBy or "dungeon"
+	table.sort(pdList, function(a, b)
+		local da, db = USPF_GetPDDungeonDisplayName(a), USPF_GetPDDungeonDisplayName(b)
+		local za, zb = USPF_GetPDZoneDisplayName(a), USPF_GetPDZoneDisplayName(b)
+		local la, lb = zo_strlower(da), zo_strlower(db)
+		local lza, lzb = zo_strlower(za), zo_strlower(zb)
+		if sortMode == "zone" then
+			if lza ~= lzb then return lza < lzb end
+			return la < lb
+		end
+		if la ~= lb then return la < lb end
+		return lza < lzb
+	end)
+	return pdList
+end
+
+local function USPF_FindGDEntry(key)
+	for _, d in ipairs(USPF.data.GD) do
+		if d.key == key then return d end
+	end
+	return nil
+end
+
+local function USPF_BuildDunCombos(preserveSelection)
+	local savedPDKey = preserveSelection and USPF.dunPDKey or nil
+	local savedGDKey = preserveSelection and USPF.dunGDKey or nil
+
 	local pdCombo = USPF_DUN_GUI_Body_PDCombo.comboBox or ZO_ComboBox_ObjectFromContainer(USPF_DUN_GUI_Body_PDCombo)
 	USPF_DUN_GUI_Body_PDCombo.comboBox = pdCombo
 	local gdCombo = USPF_DUN_GUI_Body_GDCombo.comboBox or ZO_ComboBox_ObjectFromContainer(USPF_DUN_GUI_Body_GDCombo)
@@ -1322,8 +1370,8 @@ local function USPF_BuildDunCombos()
 		USPF:UpdateDunButtonState()
 	end))
 
-	for _, d in ipairs(USPF.data.PD) do
-		local label = zf("<<C:1>>", GZNBId(d.id))
+	for _, d in ipairs(USPF_BuildSortedPDList()) do
+		local label = USPF_GetPDComboLabel(d)
 		pdCombo:AddItem(pdCombo:CreateItemEntry(label, function()
 			USPF.dunPDKey = d.key
 			USPF.dunGDKey = nil
@@ -1339,7 +1387,7 @@ local function USPF_BuildDunCombos()
 	end))
 
 	for _, d in ipairs(USPF.data.GD) do
-		local label = zf("<<C:1>>", GZNBId(d.id))
+		local label = USPF_GetGDComboLabel(d)
 		gdCombo:AddItem(gdCombo:CreateItemEntry(label, function()
 			USPF.dunGDKey = d.key
 			USPF.dunPDKey = nil
@@ -1349,10 +1397,45 @@ local function USPF_BuildDunCombos()
 		end))
 	end
 
-	pdCombo:SetSelectedItem(selPD)
-	gdCombo:SetSelectedItem(selGD)
-	USPF.dunPDKey = nil
-	USPF.dunGDKey = nil
+	if savedPDKey then
+		local pdEntry = nil
+		for _, d in ipairs(USPF.data.PD) do
+			if d.key == savedPDKey then
+				pdEntry = d
+				break
+			end
+		end
+		if pdEntry then
+			pdCombo:SetSelectedItem(USPF_GetPDComboLabel(pdEntry))
+			gdCombo:SetSelectedItem(selGD)
+			USPF.dunPDKey = savedPDKey
+			USPF.dunGDKey = nil
+		else
+			pdCombo:SetSelectedItem(selPD)
+			gdCombo:SetSelectedItem(selGD)
+			USPF.dunPDKey = nil
+			USPF.dunGDKey = nil
+		end
+	elseif savedGDKey then
+		local gdEntry = USPF_FindGDEntry(savedGDKey)
+		if gdEntry then
+			gdCombo:SetSelectedItem(USPF_GetGDComboLabel(gdEntry))
+			pdCombo:SetSelectedItem(selPD)
+			USPF.dunGDKey = savedGDKey
+			USPF.dunPDKey = nil
+		else
+			pdCombo:SetSelectedItem(selPD)
+			gdCombo:SetSelectedItem(selGD)
+			USPF.dunPDKey = nil
+			USPF.dunGDKey = nil
+		end
+	else
+		pdCombo:SetSelectedItem(selPD)
+		gdCombo:SetSelectedItem(selGD)
+		USPF.dunPDKey = nil
+		USPF.dunGDKey = nil
+	end
+
 	USPF:UpdateDunButtonState()
 end
 
@@ -1398,11 +1481,27 @@ end
 function USPF:ToggleDunWindow()
 	USPF.dunActive = not USPF.dunActive
 	if USPF.dunActive then
+		USPF:UpdateDunPDSortButtonLabel()
 		USPF_UpdateListData(USPF_DUN_GUI_Body_ListHolder, {
 			{ header = true, source = GS(USPF_DUN_CHAR_NAME), progress = GS(USPF_DUN_STATUS) },
 		})
 	end
 	SCENE_MANAGER:ToggleTopLevel(USPF_DUN_GUI)
+end
+
+function USPF:UpdateDunPDSortButtonLabel()
+	if USPF.sVar.dunPDSortBy == "zone" then
+		USPF_DUN_GUI_Body_PDSortBtn:SetText(GS(USPF_DUN_PD_SORT_ZONE))
+	else
+		USPF_DUN_GUI_Body_PDSortBtn:SetText(GS(USPF_DUN_PD_SORT_DUNGEON))
+	end
+end
+
+function USPF:CycleDunPDSort()
+	USPF.sVar.dunPDSortBy = USPF.sVar.dunPDSortBy == "zone" and "dungeon" or "zone"
+	USPF:UpdateDunPDSortButtonLabel()
+	USPF_BuildDunCombos(true)
+	PlaySound(SOUNDS.DEFAULT_CLICK)
 end
 
 function USPF:SetupDunWindow()
@@ -1412,13 +1511,15 @@ function USPF:SetupDunWindow()
 	USPF_DUN_GUI_Body_Label_PD:SetFont(titleFont .. "|16")
 	USPF_DUN_GUI_Body_Label_GD:SetFont(titleFont .. "|16")
 	USPF_DUN_GUI_Body_ListBtn:SetFont(rowFont)
+	USPF_DUN_GUI_Body_PDSortBtn:SetFont(rowFont)
 
 	ZO_ScrollList_AddDataType(USPF_DUN_GUI_Body_ListHolder, USPF_LIST_DATA_TYPE, "USPF_GeneralTemplate", 18, function(control, data)
 		USPF:SetupGeneralItem(control, data)
 	end)
 	ZO_ScrollList_AddDataType(USPF_DUN_GUI_Body_ListHolder, USPF_LIST_SEPARATOR_TYPE, "USPF_ListSeparator", 2, function() end)
 
-	USPF_BuildDunCombos()
+	USPF:UpdateDunPDSortButtonLabel()
+	USPF_BuildDunCombos(false)
 end
 
 
@@ -1711,6 +1812,10 @@ local function USPF_Initialized(eventCode, addonName)
 		USPF.sVar = ZO_SavedVars:NewAccountWide("USPF_Settings", USPF.version, nil, USPF.defaults)
 	else
 		USPF.sVar = ZO_SavedVars:NewAccountWide("USPF_Settings", USPF.version, world, USPF.defaults)
+	end
+
+	if USPF.sVar.dunPDSortBy ~= "dungeon" and USPF.sVar.dunPDSortBy ~= "zone" then
+		USPF.sVar.dunPDSortBy = "dungeon"
 	end
 
 	--Run the startup routine.

@@ -268,7 +268,7 @@
 		</TopLevelControl>
 
 		<TopLevelControl name="USPF_DUN_GUI" mouseEnabled="true" movable="true" hidden="true" allowBringToTop="true" tier="HIGH">
-			<Dimensions x="440" y="420" />
+			<Dimensions x="440" y="458" />
 			<Anchor point="CENTER" relativeTo="GuiRoot" relativePoint="CENTER" offsetX="0" offsetY="0" />
 
 			<Controls>
@@ -308,9 +308,15 @@
 							<Anchor point="TOPLEFT" relativeTo="$(parent)_Label_PD" relativePoint="BOTTOMLEFT" offsetX="0" offsetY="4" />
 						</Control>
 
+						<Button name="$(parent)_PDSortBtn" inherits="ZO_DefaultButton" text="USPF_DUN_PD_SORT_DUNGEON">
+							<Dimensions x="400" y="28" />
+							<Anchor point="TOPLEFT" relativeTo="$(parent)_PDCombo" relativePoint="BOTTOMLEFT" offsetX="0" offsetY="6" />
+							<OnMouseUp>USPF:CycleDunPDSort()</OnMouseUp>
+						</Button>
+
 						<Label name="$(parent)_Label_GD" font="$(ANTIQUE_FONT)|16" text="USPF_DUN_LABEL_GD" horizontalAlignment="LEFT" verticalAlignment="CENTER">
 							<Dimensions x="424" y="20" />
-							<Anchor point="TOPLEFT" relativeTo="$(parent)_PDCombo" relativePoint="BOTTOMLEFT" offsetX="0" offsetY="10" />
+							<Anchor point="TOPLEFT" relativeTo="$(parent)_PDSortBtn" relativePoint="BOTTOMLEFT" offsetX="0" offsetY="10" />
 						</Label>
 						<Control name="$(parent)_GDCombo" inherits="ZO_ComboBox" tier="HIGH">
 							<Dimensions x="400" y="26" />
