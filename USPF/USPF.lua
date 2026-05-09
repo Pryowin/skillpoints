@@ -1718,6 +1718,7 @@ local function USPF_Initialized(eventCode, addonName)
 
 	--Create the keybind(s).
 	ZO_CreateStringId("SI_BINDING_NAME_USPF_TOGGLE", "Show Skill Point Finder")
+	ZO_CreateStringId("SI_BINDING_NAME_USPF_DUN_TOGGLE", "Dungeon account window")
 
 	--Register the slash commands.
 	SLASH_COMMANDS["/uspf"] = function(keyWord, argument)

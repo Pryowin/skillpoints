@@ -85,6 +85,7 @@ SafeAddString(USPF_GUI_UNASSIGNED,						"nicht zugewiesen")
 
 
 SafeAddString(SI_BINDING_NAME_USPF_TOGGLE,				"Ein- / Ausblenden des USPF-Fensters")
+SafeAddString(SI_BINDING_NAME_USPF_DUN_TOGGLE,			"Ein- / Ausblenden des USPF-Verliese-Kontofensters")
 
 SafeAddString(USPF_GUI_ZN_MQ,							"Hauptaufgabe")
 

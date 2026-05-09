@@ -85,6 +85,7 @@ local strings = {
 
 
 	SI_BINDING_NAME_USPF_TOGGLE = "Show/Hide the USPF window.",
+	SI_BINDING_NAME_USPF_DUN_TOGGLE = "Show/Hide the USPF dungeon account window.",
 	USPF_GUI_ZN_MQ		= "Main Quest",
 
 	USPF_MSG_SHOW_GUI	= "USPF displayed.",

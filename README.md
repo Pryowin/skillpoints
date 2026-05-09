@@ -28,7 +28,7 @@ The folder must be named **`USPF`** and contain `USPF.txt` at the top level.
 | `/uspfmenu` | Open **LibAddonMenu** settings (fonts, colors, sort order, overrides) |
 | `/uspdun` | Show or hide the **dungeon account** window (see below) |
 
-You can also bind the main window via **Controls → Urich's Skill Point Finder**.
+You can also bind both windows under **Controls → Urich's Skill Point Finder** (main USPF and **Dungeon account window**).
 
 ## Main window — existing functionality
 

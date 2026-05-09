@@ -85,6 +85,7 @@ SafeAddString(USPF_GUI_UNASSIGNED,						"non attribué")
 
 
 SafeAddString(SI_BINDING_NAME_USPF_TOGGLE,				"Afficher/masquer la fenêtre USPF.")
+SafeAddString(SI_BINDING_NAME_USPF_DUN_TOGGLE,			"Afficher/masquer la fenêtre USPF donjons (compte).")
 
 SafeAddString(USPF_GUI_ZN_MQ,							"Quête Principale")
 

@@ -84,6 +84,7 @@ SafeAddString(USPF_GUI_UNASSIGNED,                                 "未分配")
 
 
 SafeAddString(SI_BINDING_NAME_USPF_TOGGLE,                         "显示/隐藏 USPF窗口。")
+SafeAddString(SI_BINDING_NAME_USPF_DUN_TOGGLE,                       "显示/隐藏 USPF 地下城账户窗口。")
 
 SafeAddString(USPF_GUI_ZN_MQ,                                      "主线任务")
 
