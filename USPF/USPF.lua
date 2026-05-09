@@ -1159,7 +1159,8 @@ local function USPF_FormatProgress(current, total, colors)
 	return strF("%s%d/%d|r", color, current, total)
 end
 
-local function USPF_UpdateListData(control, data)
+--- @param fixedViewport boolean|nil If true, do not resize the control to content height. Use for scroll lists with a fixed pixel height in XML (ZO_ScrollList viewport); resizing to full content breaks layout until the user scrolls.
+local function USPF_UpdateListData(control, data, fixedViewport)
 	local dataList = ZO_ScrollList_GetDataList(control)
 	ZO_ScrollList_Clear(control)
 	table.insert(dataList, ZO_ScrollList_CreateDataEntry(USPF_LIST_DATA_TYPE, data[1])) -- header
@@ -1169,7 +1170,11 @@ local function USPF_UpdateListData(control, data)
 	end
 	table.insert(dataList, ZO_ScrollList_CreateDataEntry(USPF_LIST_SEPARATOR_TYPE, {}))
 	ZO_ScrollList_Commit(control)
-	control:SetHeight(18 * #data + 4)
+	if fixedViewport then
+		ZO_ScrollList_ResetToTopLevel(control)
+	else
+		control:SetHeight(18 * #data + 4)
+	end
 end
 
 function USPF:UpdateDataLines()
@@ -1469,7 +1474,7 @@ function USPF:RefreshDunCharacterList()
 			progress = progressText,
 		})
 	end
-	USPF_UpdateListData(USPF_DUN_GUI_Body_ListHolder, lines)
+	USPF_UpdateListData(USPF_DUN_GUI_Body_ListHolder, lines, true)
 end
 
 function USPF:OnDunListButton()
@@ -1484,7 +1489,7 @@ function USPF:ToggleDunWindow()
 		USPF:UpdateDunPDSortButtonLabel()
 		USPF_UpdateListData(USPF_DUN_GUI_Body_ListHolder, {
 			{ header = true, source = GS(USPF_DUN_CHAR_NAME), progress = GS(USPF_DUN_STATUS) },
-		})
+		}, true)
 	end
 	SCENE_MANAGER:ToggleTopLevel(USPF_DUN_GUI)
 end
