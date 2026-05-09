@@ -1171,7 +1171,10 @@ local function USPF_UpdateListData(control, data, fixedViewport)
 	table.insert(dataList, ZO_ScrollList_CreateDataEntry(USPF_LIST_SEPARATOR_TYPE, {}))
 	ZO_ScrollList_Commit(control)
 	if fixedViewport then
-		ZO_ScrollList_ResetToTopLevel(control)
+		-- Not all API versions expose ZO_ScrollList_ResetToTopLevel (nil would error as "function expected").
+		if ZO_ScrollList_ResetToTopLevel then
+			ZO_ScrollList_ResetToTopLevel(control)
+		end
 	else
 		control:SetHeight(18 * #data + 4)
 	end
