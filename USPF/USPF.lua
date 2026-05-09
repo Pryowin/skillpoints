@@ -1484,14 +1484,19 @@ function USPF:OnDunListButton()
 end
 
 function USPF:ToggleDunWindow()
-	USPF.dunActive = not USPF.dunActive
-	if USPF.dunActive then
+	-- Use Show/Hide from actual visibility instead of ToggleTopLevel. ToggleTopLevel can desync from
+	-- IsHidden() (keybind + close button), so the first press or click appears to do nothing.
+	if USPF_DUN_GUI:IsHidden() then
+		USPF.dunActive = true
 		USPF:UpdateDunPDSortButtonLabel()
 		USPF_UpdateListData(USPF_DUN_GUI_Body_ListHolder, {
 			{ header = true, source = GS(USPF_DUN_CHAR_NAME), progress = GS(USPF_DUN_STATUS) },
 		}, true)
+		SCENE_MANAGER:ShowTopLevel(USPF_DUN_GUI)
+	else
+		USPF.dunActive = false
+		SCENE_MANAGER:HideTopLevel(USPF_DUN_GUI)
 	end
-	SCENE_MANAGER:ToggleTopLevel(USPF_DUN_GUI)
 end
 
 function USPF:UpdateDunPDSortButtonLabel()
