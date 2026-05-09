@@ -101,6 +101,19 @@ local strings = {
 
 	USPF_QUEST_NA		= "These skill points are not quest based.",
 	USPF_QUEST_NONE		= "There are no skill point quests in this zone.",
+
+	USPF_DUN_WINDOW_TITLE	= "Dungeon skill point (account)",
+	USPF_DUN_SELECT_PD		= "-- Public dungeon --",
+	USPF_DUN_SELECT_GD		= "-- Group dungeon --",
+	USPF_DUN_LABEL_PD		= "Public dungeon",
+	USPF_DUN_LABEL_GD		= "Group dungeon",
+	USPF_DUN_LIST_BTN		= "List characters",
+	USPF_DUN_CHAR_NAME		= "Character",
+	USPF_DUN_STATUS			= "Skill point",
+	USPF_DUN_HAS_SP			= "Yes",
+	USPF_DUN_MISSING_SP		= "No",
+	USPF_DUN_UNKNOWN		= "Unknown",
+	USPF_DUN_NO_DATA		= "No saved data",
 }
 
 for stringId, stringValue in pairs(strings) do

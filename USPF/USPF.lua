@@ -2,6 +2,9 @@ if USPF == nil then USPF = {} end
 USPF.AddonName = "USPF"
 USPF.version = 1.0
 USPF.active = false
+USPF.dunActive = false
+USPF.dunPDKey = nil
+USPF.dunGDKey = nil
 USPF.GUI = {}
 local selectedChar = GetCurrentCharacterId()
 local currentCharName = nil
@@ -1300,6 +1303,124 @@ function USPF:ToggleWindow()
 	SCENE_MANAGER:ToggleTopLevel(USPF_GUI)
 end
 
+local function USPF_BuildDunCombos()
+	local pdCombo = USPF_DUN_GUI_Body_PDCombo.comboBox or ZO_ComboBox_ObjectFromContainer(USPF_DUN_GUI_Body_PDCombo)
+	USPF_DUN_GUI_Body_PDCombo.comboBox = pdCombo
+	local gdCombo = USPF_DUN_GUI_Body_GDCombo.comboBox or ZO_ComboBox_ObjectFromContainer(USPF_DUN_GUI_Body_GDCombo)
+	USPF_DUN_GUI_Body_GDCombo.comboBox = gdCombo
+
+	local selPD = GS(USPF_DUN_SELECT_PD)
+	local selGD = GS(USPF_DUN_SELECT_GD)
+
+	pdCombo:ClearItems()
+	gdCombo:ClearItems()
+	pdCombo:SetSortsItems(false)
+	gdCombo:SetSortsItems(false)
+
+	pdCombo:AddItem(pdCombo:CreateItemEntry(selPD, function()
+		USPF.dunPDKey = nil
+		USPF:UpdateDunButtonState()
+	end))
+
+	for _, d in ipairs(USPF.data.PD) do
+		local label = zf("<<C:1>>", GZNBId(d.id))
+		pdCombo:AddItem(pdCombo:CreateItemEntry(label, function()
+			USPF.dunPDKey = d.key
+			USPF.dunGDKey = nil
+			gdCombo:SetSelectedItem(selGD)
+			USPF:UpdateDunButtonState()
+			PlaySound(SOUNDS.POSITIVE_CLICK)
+		end))
+	end
+
+	gdCombo:AddItem(gdCombo:CreateItemEntry(selGD, function()
+		USPF.dunGDKey = nil
+		USPF:UpdateDunButtonState()
+	end))
+
+	for _, d in ipairs(USPF.data.GD) do
+		local label = zf("<<C:1>>", GZNBId(d.id))
+		gdCombo:AddItem(gdCombo:CreateItemEntry(label, function()
+			USPF.dunGDKey = d.key
+			USPF.dunPDKey = nil
+			pdCombo:SetSelectedItem(selPD)
+			USPF:UpdateDunButtonState()
+			PlaySound(SOUNDS.POSITIVE_CLICK)
+		end))
+	end
+
+	pdCombo:SetSelectedItem(selPD)
+	gdCombo:SetSelectedItem(selGD)
+	USPF.dunPDKey = nil
+	USPF.dunGDKey = nil
+	USPF:UpdateDunButtonState()
+end
+
+function USPF:UpdateDunButtonState()
+	local ok = USPF.dunPDKey ~= nil or USPF.dunGDKey ~= nil
+	USPF_DUN_GUI_Body_ListBtn:SetEnabled(ok)
+end
+
+function USPF:RefreshDunCharacterList()
+	local lines = {
+		{ header = true, source = GS(USPF_DUN_CHAR_NAME), progress = GS(USPF_DUN_STATUS) },
+	}
+	for i = 1, GetNumCharacters() do
+		local name, _, _, _, _, _, charId, _ = GetCharacterInfo(i)
+		local charName = zf("<<1>>", name)
+		local pts = USPF.sVar.ptsData[charId]
+		local progressText
+		if not pts then
+			progressText = GS(USPF_DUN_NO_DATA)
+		elseif USPF.dunPDKey then
+			local v = pts.PD and pts.PD[USPF.dunPDKey]
+			progressText = (v == 1) and USPF_GreenText(GS(USPF_DUN_HAS_SP)) or USPF_RedText(GS(USPF_DUN_MISSING_SP))
+		elseif USPF.dunGDKey then
+			local v = pts.GD and pts.GD[USPF.dunGDKey]
+			progressText = (v == 1) and USPF_GreenText(GS(USPF_DUN_HAS_SP)) or USPF_RedText(GS(USPF_DUN_MISSING_SP))
+		else
+			progressText = GS(USPF_DUN_UNKNOWN)
+		end
+		table.insert(lines, {
+			source = charName,
+			progress = progressText,
+		})
+	end
+	USPF_UpdateListData(USPF_DUN_GUI_Body_ListHolder, lines)
+end
+
+function USPF:OnDunListButton()
+	if not USPF.dunPDKey and not USPF.dunGDKey then return end
+	USPF:RefreshDunCharacterList()
+	PlaySound(SOUNDS.POSITIVE_CLICK)
+end
+
+function USPF:ToggleDunWindow()
+	USPF.dunActive = not USPF.dunActive
+	if USPF.dunActive then
+		USPF_UpdateListData(USPF_DUN_GUI_Body_ListHolder, {
+			{ header = true, source = GS(USPF_DUN_CHAR_NAME), progress = GS(USPF_DUN_STATUS) },
+		})
+	end
+	SCENE_MANAGER:ToggleTopLevel(USPF_DUN_GUI)
+end
+
+function USPF:SetupDunWindow()
+	local titleFont = USPF.Options.Font.Fonts[USPF.settings.title.font]
+	local rowFont = titleFont .. "|14"
+	USPF_DUN_GUI_Header_Title:SetFont(titleFont .. "|24")
+	USPF_DUN_GUI_Body_Label_PD:SetFont(titleFont .. "|16")
+	USPF_DUN_GUI_Body_Label_GD:SetFont(titleFont .. "|16")
+	USPF_DUN_GUI_Body_ListBtn:SetFont(rowFont)
+
+	ZO_ScrollList_AddDataType(USPF_DUN_GUI_Body_ListHolder, USPF_LIST_DATA_TYPE, "USPF_GeneralTemplate", 18, function(control, data)
+		USPF:SetupGeneralItem(control, data)
+	end)
+	ZO_ScrollList_AddDataType(USPF_DUN_GUI_Body_ListHolder, USPF_LIST_SEPARATOR_TYPE, "USPF_ListSeparator", 2, function() end)
+
+	USPF_BuildDunCombos()
+end
+
 
 function USPF:SetupValues()
 	USPF_RefreshData()
@@ -1609,6 +1730,10 @@ local function USPF_Initialized(eventCode, addonName)
 		end
 	end
 
+	SLASH_COMMANDS["/uspdun"] = function()
+		USPF:ToggleDunWindow()
+	end
+
 	local charId = GCCId()
 
 	--Load the character settings.
@@ -1622,8 +1747,10 @@ local function USPF_Initialized(eventCode, addonName)
 
 	--Call startup routine.
 	USPF:SetupValues()
+	USPF:SetupDunWindow()
 
 	SCENE_MANAGER:RegisterTopLevel(USPF_GUI, locksUIMode)
+	SCENE_MANAGER:RegisterTopLevel(USPF_DUN_GUI, locksUIMode)
 
 	--Create the event handlers.
 	EVENT_MANAGER:RegisterForEvent(USPF.AddonName, EVENT_SKILL_POINTS_CHANGED, USPF_SkillPointsUpdate)
